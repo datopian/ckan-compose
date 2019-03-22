@@ -1,0 +1,41 @@
+FROM openknowledge/ckan-dev:2.8
+
+MAINTAINER Viderum <info@Viderum.com>
+
+# Install utilities
+RUN pip install ipdb ipdbplugin
+
+# Install any extensions needed by your CKAN instance
+# (Make sure to add the plugins to CKAN__PLUGINS in the .env file)
+# TODO: pin when possible
+RUN echo 'Installing extensions' && \
+	# harvest
+    pip install -e git+https://github.com/ckan/ckanext-harvest.git@v1.1.4#egg=ckanext-harvest && \
+    pip install -r https://raw.githubusercontent.com/ckan/ckanext-harvest/v1.1.4/pip-requirements.txt && \
+    # spatial
+    pip install -e git+https://github.com/ckan/ckanext-spatial.git#egg=ckanext-spatial && \
+    pip install -r https://raw.githubusercontent.com/ckan/ckanext-spatial/master/pip-requirements.txt && \
+    # ckantoolkit
+    pip install -e git+https://github.com/ckan/ckantoolkit.git#egg=ckantoolkit && \
+    # geoview
+    pip install -e git+https://github.com/okfn/ckanext-geoview.git@#egg=ckanext-geoview && \
+    # hierarchy
+    pip install -e git+https://github.com/okfn/ckanext-hierarchy.git#egg=ckanext-hierarchy && \
+    # pdfview
+    pip install -e git+https://github.com/okfn/ckanext-pdfview.git#egg=ckanext-pdfview
+
+
+
+# Apply patches
+#COPY patches ${APP_DIR}/patches
+
+#RUN for d in $APP_DIR/patches/*; do \
+#        for f in `ls $d/*.patch | sort -g`; do \
+#		    cd $SRC_DIR/`basename "$d"` && echo "$0: Applying patch $f to $SRC_DIR/`basename $d`"; patch -p1 < "$f" ; \
+#        done ; \
+#    done
+
+# Copy config files
+COPY crontabs/* /etc/crontabs/
+COPY docker-entrypoint.d/* /docker-entrypoint.d/
+COPY supervisor.d/* /etc/supervisord.d/
